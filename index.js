@@ -68,23 +68,7 @@ let jsonData = {};
     for(let i = 0; i < allCombinations.length; i++){
         let payload = await phase1(page, allCombinations[i], i)
         let value = await phase2(page, payload, allCombinations[i])
-        jsonData[allCombinations[i]] = value;
-        value = value.map((v)=>{
-          let newValue = v;
-          delete newValue.img
-          return newValue
-        })
-        jsonDataDebug[allCombinations[i]] = value
 
-        // Convert the JSON object back to a JSON string
-        const jsonStringDebug = JSON.stringify(jsonDataDebug, null, 2); // The '2' adds indentation for better readability
-
-        // Write the JSON string back to the file
-        fs.writeFileSync(filePathDebug, jsonStringDebug);
-
-        const jsonString = JSON.stringify(jsonData, null, 2);
-
-        fs.writeFileSync(filePath, jsonString);
 
         console.log('search term done: ' + i + '/' + allCombinations.length)
     }
@@ -231,6 +215,20 @@ async function phase2(page, payload, searchTerm){
         alreadyexist++;
         console.log('already exist: ' + alreadyexist)
       }
+      jsonData[searchTerm].push(payloadResult)
+      let newValue = payloadResult;
+      delete newValue.img
+      jsonDataDebug[searchTerm].push(newValue)
+
+      // Convert the JSON object back to a JSON string
+      const jsonStringDebug = JSON.stringify(jsonDataDebug, null, 2); // The '2' adds indentation for better readability
+
+      // Write the JSON string back to the file
+      fs.writeFileSync(filePathDebug, jsonStringDebug);
+
+      const jsonString = JSON.stringify(jsonData, null, 2);
+
+      fs.writeFileSync(filePath, jsonString);
       console.log('profile ingestion done: ' + i + '/' + innerPayload.length)
     });
     req.write(postData);

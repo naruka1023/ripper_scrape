@@ -12,18 +12,18 @@ const rl = readline.createInterface({
 
 (async () => {
     const searchtermMatrix = [
-      ['personal', 'Track and Field', 'Boxing', 'Wrestling', 'Judo', 'Taekwondo', 'Karate', 'Muay Thai', 'Kickboxing', 'Brazillian Jiu Jutsu', 'Fencing', 'MMA', 'Krav Maga', 'Tennis', 'Table Tennis', 'Badminton', 'Squash', 'Racquetball', 'Padel', 'Swimming', 'Diving', 'Surfing', 'Windsurfing', 'Kite Surfing', 'Wakeboarding', 'Paddleboarding', 'Canoe', 'Sailing', 'Water Polo', 'Mountain Biking', 'BMX', 'Cyclocross', 'Gravel', 'Dressage', 'Polo', 'Trail Riding', 'Gymkhana', 'Darts', 'Billiards', 'Pool', 'Snooker', 'Bowling', 'Weightlifting', 'Bodybuilding', 'Calisthenics', 'HIIT', 'Pilates', 'Aerobics', 'Skydiving', 'Rock Climbing', 'Mountaineering', 'White-water Rafting', 'Caving', 'Paragliding', 'Hang Gliding', 'Skateboarding', 'Free Diving', 'Highlining', 'Parkour', 'Sandboarding', 'Ballroom Dancing', 'Latin Dancing', 'Tango', 'Salsa', 'Ballet', 'Contemporary', 'Hip-Hop', 'Shuffling', 'Football', 'Basketball', 'Baseball', 'Cricket', 'Hockey', 'Rugby', 'Volleyball', 'Lacrosse', 'Chess', 'Golf'],
+      ['gym', 'Track and Field', 'Boxing', 'Wrestling', 'Judo', 'Taekwondo', 'Karate', 'Muay Thai', 'Kickboxing', 'Brazillian Jiu Jutsu', 'Fencing', 'MMA', 'Krav Maga', 'Tennis', 'Table Tennis', 'Badminton', 'Squash', 'Racquetball', 'Padel', 'Swimming', 'Diving', 'Surfing', 'Windsurfing', 'Kite Surfing', 'Wakeboarding', 'Paddleboarding', 'Canoe', 'Sailing', 'Water Polo', 'Mountain Biking', 'BMX', 'Cyclocross', 'Gravel', 'Dressage', 'Polo', 'Trail Riding', 'Gymkhana', 'Darts', 'Billiards', 'Pool', 'Snooker', 'Bowling', 'Weightlifting', 'Bodybuilding', 'Calisthenics', 'HIIT', 'Pilates', 'Aerobics', 'Skydiving', 'Rock Climbing', 'Mountaineering', 'White-water Rafting', 'Caving', 'Paragliding', 'Hang Gliding', 'Skateboarding', 'Free Diving', 'Highlining', 'Parkour', 'Sandboarding', 'Ballroom Dancing', 'Latin Dancing', 'Tango', 'Salsa', 'Ballet', 'Contemporary', 'Hip-Hop', 'Shuffling', 'Football', 'Basketball', 'Baseball', 'Cricket', 'Hockey', 'Rugby', 'Volleyball', 'Lacrosse', 'Chess', 'Golf'],
       ['trainer', 'coach'],
       ['bangkok', 'kuala lumpur']]
       
     let allCombinations = []
     allCombinations = generateCombinations(searchtermMatrix)
-    allCombinations.splice(0,1)
+    // allCombinations.splice(0,2)
     
     const browser = await puppeteer.launch({ headless: false,
       defaultViewport: {
-        width:1920,
-        height:1080
+        width:1080,
+        height:720
       } });
     
     try {
@@ -33,23 +33,23 @@ const rl = readline.createInterface({
       context.overridePermissions("https://www.tiktok.com", ["notifications"]);
       const page = await browser.newPage();
       await page.goto(encodeURI(`https://www.tiktok.com`));
-      // page.waitForSelector('.efna91q2')
-      // const loginButton = await page.$('.efna91q2')
+      page.waitForSelector('.efna91q2')
+      const loginButton = await page.$('.efna91q2')
       
-      // loginButton.click(),
-      // await page.waitForSelector('[data-list-item-value="email/username"]')
-      // emailButton = await page.$('[data-list-item-value="email/username"]')
-      // emailButton.click()
+      loginButton.click(),
+      await page.waitForSelector('[data-list-item-value="email/username"]')
+      emailButton = await page.$('[data-list-item-value="email/username"]')
+      emailButton.click()
       
-      // await page.waitForSelector('[name="username"]')
+      await page.waitForSelector('[name="username"]')
 
-      // username = await page.$('[name="username"]')
-      // await username.type('p.muangsaen@gmail.com')
-      // password = await page.$('.tiktok-15cv7mx-InputContainer')
-      // await password.type('W0rld0fw@rcr@ft1!')
-      // signInButton = await page.$('[data-e2e="login-button"]')
-      // signInButton.click()
-      // await waitForUserInput('Press Enter to continue...');
+      username = await page.$('[name="username"]')
+      await username.type('p.muangsaen@gmail.com', {delay: 100})
+      password = await page.$('.tiktok-15cv7mx-InputContainer')
+      await password.type('W0rld0fw@rcr@ft1!', {delay: 100})
+      signInButton = await page.$('[data-e2e="login-button"]')
+      signInButton.click()
+      await waitForUserInput('Press Enter to continue...');
 
 
       // this is where the scraping begins 
@@ -90,13 +90,13 @@ function generateCombinations(arrays) {
 }
 
 async function phase1(page, searchTerm, index){
-  const searchBox = await page.$('[data-e2e="search-user-input"]');
-  await searchBox.type(searchTerm, {delay: 100})
+  // const searchBox = await page.$('[data-e2e="search-user-input"]');
+  // await searchBox.type(searchTerm, {delay: 100})
   
-  const searchButton = await page.$('[data-e2e="search-box-button"]');
-  searchButton.click()
+  // const searchButton = await page.$('[data-e2e="search-box-button"]');
+  // searchButton.click()
 
-  // await page.goto(encodeURI(`https://www.tiktok.com/search?q=${searchTerm}`));
+  await page.goto(encodeURI(`https://www.tiktok.com/search?q=${searchTerm}`));
 
     // Wait for search results to load (you may need to adjust the selector)
     if(index == 0){
@@ -128,7 +128,9 @@ async function phase1(page, searchTerm, index){
 async function phase2(page, payload, searchTerm){
   let innerPayload = payload
   let payloadResult = {}
-  for(let i = 0; i < innerPayload.length; i++){
+  let alreadyexist = 95
+  let notexist = 96
+  for(let i = 151; i < innerPayload.length; i++){
     await page.goto(`https://www.tiktok.com/@${innerPayload[i]}`);
     // await waitForUserInput('Press Enter to continue...');
     let parsedStatus = {}
@@ -173,6 +175,14 @@ async function phase2(page, payload, searchTerm){
     };
     var req = https.request(options, function(res) {
       console.log(res.statusCode);
+      if(res.statusCode == 200){
+        notexist++;
+        console.log('new: ' + notexist)
+      }
+      if(res.statusCode == 204){
+        alreadyexist++;
+        console.log('already exist: ' + alreadyexist)
+      }
       console.log('profile ingestion done: ' + i + '/' + innerPayload.length)
     });
     req.write(postData);
@@ -209,12 +219,10 @@ async function waitForUserInput(prompt) {
     });
   }
 async function scrollDown(page) {
-  const previousHeight = await page.evaluate(() => document.body.scrollHeight);
   
   await page.evaluate(() => {
-    window.scrollBy(0, 1920);
+    window.scrollBy(0, 720);
   });
-  const currentHeight = await page.evaluate(() => document.body.scrollHeight);
   await page.waitForTimeout(1000); // Wait for a moment for content to load (adjust as needed)
-  return currentHeight > previousHeight; // Return true if more content was loaded, false otherwise
+  return await page.$(".tiktok-usx5e-DivNoMoreResultsContainer") == null ; // Return true if more content was loaded, false otherwise
 }

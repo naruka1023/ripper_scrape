@@ -1,30 +1,16 @@
-const puppeteer = require('puppeteer');
-const readline = require('readline');
-const https = require('https')
-const fs = require('fs')
+import puppeteer from 'puppeteer';
+import {  generateCombinations,
+          waitForSelectorAsync,
+          waitForUserInput,
+          scrollDown,
+          removeDuplicates
+        } from './utils.js';
 
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
-});
-
-
-
-const filePath = 'scrapedData.json';
-const filePathDebug = 'scrapedData-debug.json';
-
-// Read the JSON file (or create an empty object if the file doesn't exist)
 let jsonData = {};
 (async () => {
-    const searchtermMatrix = [
-      ['gym', 'Track and Field', 'Boxing', 'Wrestling', 'Judo', 'Taekwondo', 'Karate', 'Muay Thai', 'Kickboxing', 'Brazillian Jiu Jutsu', 'Fencing', 'MMA', 'Krav Maga', 'Tennis', 'Table Tennis', 'Badminton', 'Squash', 'Racquetball', 'Padel', 'Swimming', 'Diving', 'Surfing', 'Windsurfing', 'Kite Surfing', 'Wakeboarding', 'Paddleboarding', 'Canoe', 'Sailing', 'Water Polo', 'Mountain Biking', 'BMX', 'Cyclocross', 'Gravel', 'Dressage', 'Polo', 'Trail Riding', 'Gymkhana', 'Darts', 'Billiards', 'Pool', 'Snooker', 'Bowling', 'Weightlifting', 'Bodybuilding', 'Calisthenics', 'HIIT', 'Pilates', 'Aerobics', 'Skydiving', 'Rock Climbing', 'Mountaineering', 'White-water Rafting', 'Caving', 'Paragliding', 'Hang Gliding', 'Skateboarding', 'Free Diving', 'Highlining', 'Parkour', 'Sandboarding', 'Ballroom Dancing', 'Latin Dancing', 'Tango', 'Salsa', 'Ballet', 'Contemporary', 'Hip-Hop', 'Shuffling', 'Football', 'Basketball', 'Baseball', 'Cricket', 'Hockey', 'Rugby', 'Volleyball', 'Lacrosse', 'Chess', 'Golf'],
-      ['trainer', 'coach'],
-      ['bangkok', 'kuala lumpur']]
-      
     let allCombinations = []
-    allCombinations = ['personal trainer bangkok', 'gym trainer bangkok']
+    allCombinations = ['personal trainer bangkok', 'gym trainer bangkok', 'bangkok gym']
     // allCombinations = generateCombinations(searchtermMatrix)
-    // allCombinations.splice(0,2)
     
     const browser = await puppeteer.launch({ headless: false,
       defaultViewport: {
@@ -34,32 +20,11 @@ let jsonData = {};
     
     try {
  
-      const fileContent = fs.readFileSync(filePath, 'utf-8');
-      jsonData = JSON.parse(fileContent);
-
-      const fileContentDebug = fs.readFileSync(filePathDebug, 'utf-8');
-      jsonDataDebug = JSON.parse(fileContentDebug);
       const context = browser.defaultBrowserContext();
                                   //        URL                  An array of permissions
       context.overridePermissions("https://www.tiktok.com", ["notifications"]);
       const page = await browser.newPage();
       await page.goto(encodeURI(`https://www.tiktok.com`));
-      // page.waitForSelector('.efna91q2')
-      // const loginButton = await page.$('.efna91q2')
-      
-      // loginButton.click(),
-      // await page.waitForSelector('[data-list-item-value="email/username"]')
-      // emailButton = await page.$('[data-list-item-value="email/username"]')
-      // emailButton.click()
-      
-      // await page.waitForSelector('[name="username"]')
-
-      // username = await page.$('[name="username"]')
-      // await username.type('p.muangsaen@gmail.com', {delay: 100})
-      // password = await page.$('.tiktok-15cv7mx-InputContainer')
-      // await password.type('W0rld0fw@rcr@ft1!', {delay: 100})
-      // signInButton = await page.$('[data-e2e="login-button"]')
-      // signInButton.click()
       await waitForUserInput('Press Enter to continue...');
 
 
@@ -79,43 +44,14 @@ let jsonData = {};
     await browser.close();
   }
 })();
-
-function generateCombinations(arrays) {
-  let combinations = [];
-
-  function backtrack(currentCombination, arrayIndex) {
-    if (arrayIndex === arrays.length) {
-      combinations.push(currentCombination.slice()); // Add a copy of the current combination to the result
-      return;
-    }
-
-    for (const item of arrays[arrayIndex]) {
-      currentCombination.push(item);
-      backtrack(currentCombination, arrayIndex + 1);
-      currentCombination.pop(); // Backtrack
-    }
-  }
-
-  backtrack([], 0);
-  combinations = combinations.map((value)=>{
-    return value.join(' ')
-  })
-  return combinations;
-}
-
-async function phase1(page, searchTerm, index){
+async function phase1(page, searchTerm){
 
   await page.goto(encodeURI(`https://www.tiktok.com/search?q=${searchTerm}`));
 
-    // Wait for search results to load (you may need to adjust the selector)
-    // if(index == 0){
-    //   await waitForUserInput('Press Enter to continue...');
-    // }
-    // await page.waitForSelector('.e19c29qe10');
     await waitForSelectorAsync(page);
     let g = await page.$(".eegew6e0")
 
-    const maxScrolls = 100; // Adjust this to your desired scroll limit
+    const maxScrolls = 1000; // Adjust this to your desired scroll limit
     let currentScrolls = 0;
 
     while (currentScrolls < maxScrolls) {
@@ -140,10 +76,13 @@ async function phase2(page, payload, searchTerm){
   let totalPayload = []
   let alreadyexist = 0
   let notexist = 0
+  jsonData[searchTerm] = []
+  jsonDataDebug[searchTerm] = []
   for(let i = 0; i < innerPayload.length; i++){
     await page.goto(`https://www.tiktok.com/@${innerPayload[i]}`);
     // await waitForUserInput('Press Enter to continue...');
     let parsedStatus = {}
+    await page.waitForSelector('.e1vl87hj2 > .e1e9er4e1')
     const imgSrc = await page.$eval('.e1vl87hj2 > .e1e9er4e1', element => element.src);
     const status = await page.$$eval('.e1457k4r1', nodes => nodes.map(n => n.innerText));
     const description = await page.$eval('.e1457k4r3', element => element.innerText);
@@ -216,19 +155,6 @@ async function phase2(page, payload, searchTerm){
         console.log('already exist: ' + alreadyexist)
       }
       jsonData[searchTerm].push(payloadResult)
-      let newValue = payloadResult;
-      delete newValue.img
-      jsonDataDebug[searchTerm].push(newValue)
-
-      // Convert the JSON object back to a JSON string
-      const jsonStringDebug = JSON.stringify(jsonDataDebug, null, 2); // The '2' adds indentation for better readability
-
-      // Write the JSON string back to the file
-      fs.writeFileSync(filePathDebug, jsonStringDebug);
-
-      const jsonString = JSON.stringify(jsonData, null, 2);
-
-      fs.writeFileSync(filePath, jsonString);
       console.log('profile ingestion done: ' + i + '/' + innerPayload.length)
     });
     req.write(postData);
@@ -237,40 +163,9 @@ async function phase2(page, payload, searchTerm){
     req.on('error', function(e) {
         console.error(e);
       });
+      //  new = 9 exist =62
     totalPayload.push(payloadResult)
   }
   return totalPayload
 }
 
-function removeDuplicates(arr) {
-  return arr.filter((item,
-      index) => arr.indexOf(item) === index);
-}
-
-
-async function waitForSelectorAsync(page) {
-  // Simulate an asynchronous operation that may result in a timeout error
-  return new Promise((resolve, reject) => {
-    page.waitForSelector('.e19c29qe10').then(()=>{
-      resolve()
-    }).catch(()=>{
-      reject()
-    });
-  });
-};
-
-async function waitForUserInput(prompt) {
-    return new Promise((resolve) => {
-      rl.question(prompt, () => {
-        resolve();
-      });
-    });
-  }
-async function scrollDown(page) {
-  
-  await page.evaluate(() => {
-    window.scrollBy(0, 720);
-  });
-  await page.waitForTimeout(1000); // Wait for a moment for content to load (adjust as needed)
-  return await page.$(".tiktok-usx5e-DivNoMoreResultsContainer") == null ; // Return true if more content was loaded, false otherwise
-}
